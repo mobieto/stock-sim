@@ -4,14 +4,15 @@
 #include <iosfwd>
 #include <fstream>
 #include <string>
+#include <vector>
 
 class FileReader {
     public:
-        FileReader(std::string fileName);
+        FileReader(std::string _fileName);
 
-        ~FileReader();
+        std::vector<std::string> getLines() const;
     private:
-        std::fstream stream;
+        std::string fileName;
 };
 
 #endif

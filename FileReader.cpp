@@ -1,11 +1,23 @@
 #include "FileReader.h"
 #include <fstream>
 #include <string>
+#include <vector>
+#include <iostream>
 
-FileReader::FileReader(std::string fileName) {
-    stream.open(fileName.c_str());
+FileReader::FileReader(std::string _fileName) {
+    fileName = _fileName;
 }
 
-FileReader::~FileReader() {
-    stream.close();
+std::vector<std::string> FileReader::getLines() const {
+    std::string line;
+    std::ifstream file(fileName);
+    std::vector<std::string> out;
+
+    while (std::getline(file, line)) {
+        out.push_back(line);
+    }
+
+    file.close();
+
+    return out;
 }
