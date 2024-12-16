@@ -14,8 +14,25 @@
 # Actually, this is not a good example of using makefiles.
 # See the one in Assignment 1 for really using separate compilation.
 
+CXX = g++
+
 All: all
 all: main
 
-main: main.cpp
-	g++ main.cpp -o main
+main: main.cpp FileReader.o BuyOrder.o SellOrder.o
+	$(CXX) main.cpp FileReader.o BuyOrder.o SellOrder.o -o main
+
+FileReader.o: FileReader.cpp FileReader.h
+	$(CXX) -c FileReader.cpp -o FileReader.o
+
+BuyOrder.o: BuyOrder.cpp BuyOrder.h
+	$(CXX) -c BuyOrder.cpp -o BuyOrder.o
+
+SellOrder.o: SellOrder.cpp SellOrder.h
+	$(CXX) -c SellOrder.cpp -o SellOrder.o
+
+deepclean:
+	rm -f *~ *.o main main.exe *.stackdump
+
+clean:
+	rm -f *~ *.o *.stackdump
