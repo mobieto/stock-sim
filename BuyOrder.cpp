@@ -6,4 +6,5 @@ BuyOrder::BuyOrder(std::string orderId, int quantity, bool isMarketOrder, double
     quantity = quantity;
     isMarketOrder = isMarketOrder;
     limitPrice = limitPrice;
+    pending = true;
 };

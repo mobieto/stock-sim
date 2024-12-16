@@ -15,6 +15,8 @@ class BuyOrder {
         double limitPrice;
 
         bool isMarketOrder;
+
+        bool pending;
 };
 
 #endif
