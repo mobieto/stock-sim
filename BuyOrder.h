@@ -1,22 +1,14 @@
 #ifndef BUYORDER_H_
 #define BUYORDER_H_
 
+#include "Order.h"
 #include <string>
 
-class BuyOrder {
+class BuyOrder : public Order {
+    using Order::Order;
+    
     public:
         BuyOrder(std::string orderId, int quantity, bool isMarketOrder, double limitPrice);
-
-    private:
-        std::string orderId;
-
-        int quantity;
-
-        double limitPrice;
-
-        bool isMarketOrder;
-
-        bool pending;
 };
 
 #endif

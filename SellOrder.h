@@ -2,21 +2,13 @@
 #define SELLORDER_H_
 
 #include <string>
+#include "Order.h"
 
-class SellOrder {
+class SellOrder : public Order {
+    using Order::Order;
+    
     public:
         SellOrder(std::string orderId, int quantity, bool isMarketOrder, double limitPrice);
-
-    private:
-        std::string orderId;
-
-        int quantity;
-
-        double limitPrice;
-
-        bool isMarketOrder;
-
-        bool pending;
 };
 
 #endif

@@ -1,10 +1,5 @@
 #include "BuyOrder.h"
+#include "Order.h"
 #include <string>
 
-BuyOrder::BuyOrder(std::string orderId, int quantity, bool isMarketOrder, double limitPrice) {
-    orderId = orderId;
-    quantity = quantity;
-    isMarketOrder = isMarketOrder;
-    limitPrice = limitPrice;
-    pending = true;
-};
+BuyOrder::BuyOrder(std::string orderId, int quantity, bool isMarketOrder, double limitPrice) : Order(orderId, quantity, isMarketOrder, limitPrice) { };

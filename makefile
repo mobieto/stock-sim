@@ -14,22 +14,25 @@
 # Actually, this is not a good example of using makefiles.
 # See the one in Assignment 1 for really using separate compilation.
 
-CXX = g++
+CMPLR = g++
 
 All: all
 all: main
 
-main: main.cpp FileReader.o BuyOrder.o SellOrder.o
-	$(CXX) main.cpp FileReader.o BuyOrder.o SellOrder.o -o main
+main: main.cpp FileReader.o Order.o BuyOrder.o SellOrder.o
+	$(CMPLR) main.cpp FileReader.o Order.o BuyOrder.o SellOrder.o -o main
 
 FileReader.o: FileReader.cpp FileReader.h
-	$(CXX) -c FileReader.cpp -o FileReader.o
+	$(CMPLR) -c FileReader.cpp -o FileReader.o
 
-BuyOrder.o: BuyOrder.cpp BuyOrder.h
-	$(CXX) -c BuyOrder.cpp -o BuyOrder.o
+Order.o: Order.cpp Order.h
+	$(CMPLR) -c Order.cpp -o Order.o
 
-SellOrder.o: SellOrder.cpp SellOrder.h
-	$(CXX) -c SellOrder.cpp -o SellOrder.o
+BuyOrder.o: BuyOrder.cpp BuyOrder.h Order.o
+	$(CMPLR) -c BuyOrder.cpp -o BuyOrder.o
+
+SellOrder.o: SellOrder.cpp SellOrder.h Order.o
+	$(CMPLR) -c SellOrder.cpp -o SellOrder.o
 
 deepclean:
 	rm -f *~ *.o main main.exe *.stackdump
