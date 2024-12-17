@@ -9,6 +9,8 @@ class BuyOrder : public Order {
     
     public:
         BuyOrder(std::string orderId, int quantity, bool isMarketOrder, double limitPrice);
+
+        bool operator<(const Order& other) const;
 };
 
 #endif

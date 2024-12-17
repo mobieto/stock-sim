@@ -8,8 +8,19 @@ class Order {
         Order(std::string orderId, int quantity, bool isMarketOrder, double limitPrice);
 
         std::string print() const;
-        
-    private:
+
+        virtual bool operator<(const Order& other) const = 0;
+
+        std::string getOrderId() const;
+
+        int getQuantity() const;
+
+        double getLimitPrice() const;
+
+        bool getIsMarketOrder() const;
+
+        int getArrival() const;
+    protected:
         std::string orderId;
 
         int quantity;
@@ -18,7 +29,7 @@ class Order {
 
         bool isMarketOrder;
 
-        bool pending;
+        int arrival;
 };
 
 #endif
