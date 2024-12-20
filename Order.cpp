@@ -17,10 +17,10 @@ Order::Order(std::string _orderId, int _quantity, bool _isMarketOrder, double _l
 std::string Order::print() const {
     std::stringstream out;
     std::ostringstream doubleStream;
-    doubleStream << std::setprecision(3) << std::noshowpoint << limitPrice;
+    doubleStream << std::fixed << std::setprecision(2) << limitPrice;
     std::string strLimitPrice = doubleStream.str();
 
-    out << orderId << " " << (isMarketOrder ? "M" : strLimitPrice) << " " << quantity << " " << arrival;
+    out << orderId << "  " << (isMarketOrder ? "M" : strLimitPrice) << "  " << quantity;
 
     return out.str();
 }
