@@ -72,7 +72,7 @@ template<typename T>
 void processOrder(Order* order,
         T& matchedQueue,
         std::vector<std::string>& successfulTrades,
-        double lastTradingPrice) {
+        double& lastTradingPrice) {
     while (order->getQuantity() > 0 && !matchedQueue.empty()) {
         Order* top = matchedQueue.top();
 
@@ -106,6 +106,8 @@ void processOrder(Order* order,
 
         order->setQuantity(order->getQuantity() - tradeQuantity);
         top->setQuantity(top->getQuantity() - tradeQuantity);
+
+        lastTradingPrice = executionPrice;
 
         if (top->getQuantity() <= 0) {
             matchedQueue.pop();
@@ -142,8 +144,6 @@ int main(int argc, char* argv[]) {
     }
 
     for (Order* order : allOrders) {
-        std::cout << "processing order: " << order->getOrderId() << std::endl;
-
         if (order->getType() == "B") {
             processOrder(order, sellOrders, successfulTrades, lastTradingPrice);
         } else {
@@ -158,7 +158,7 @@ int main(int argc, char* argv[]) {
             sellOrders.push(dynamic_cast<SellOrder*>(order));
         }
 
-        //display(lastTradingPrice, buyOrders, sellOrders);
+        display(lastTradingPrice, buyOrders, sellOrders);
     }
 
     std::cout << std::endl << std::endl;
