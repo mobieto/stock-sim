@@ -22,6 +22,8 @@ class Order {
         std::string getType() const;
 
         int getArrival() const;
+
+        void setQuantity(int _quantity);
     protected:
         std::string orderId;
 

@@ -49,3 +49,7 @@ std::string Order::getType() const {
 int Order::getArrival() const {
     return arrival;
 }
+
+void Order::setQuantity(int _quantity) {
+    quantity = _quantity;
+}

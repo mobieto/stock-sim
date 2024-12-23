@@ -9,6 +9,11 @@
 #include <queue>
 #include <sstream>
 
+class compare {
+    public:
+        bool operator() (Order* a, Order* b) { return *a < *b; };
+};
+
 std::vector<std::string> getParts(std::string in) {
     std::vector<std::string> out;
     std::stringstream stream(in);
@@ -21,13 +26,13 @@ std::vector<std::string> getParts(std::string in) {
     return out;
 }
 
-void display(double lastTradingPrice, std::priority_queue<BuyOrder> buyOrders, std::priority_queue<SellOrder> sellOrders) {
+void display(double lastTradingPrice, std::priority_queue<BuyOrder*, std::vector<BuyOrder*>, compare> buyOrders, std::priority_queue<SellOrder*, std::vector<SellOrder*>, compare> sellOrders) {
     std::cout << "Last trading price: " << lastTradingPrice << std::endl;
     std::cout << "Buy                           Sell" << std::endl;
     std::cout << "------------------------------------------------------" << std::endl;
 
-    std::vector<BuyOrder> buyList;
-    std::vector<SellOrder> sellList;
+    std::vector<BuyOrder*> buyList;
+    std::vector<SellOrder*> sellList;
 
     while (!buyOrders.empty()) {
         buyList.push_back(buyOrders.top());
@@ -45,16 +50,16 @@ void display(double lastTradingPrice, std::priority_queue<BuyOrder> buyOrders, s
         int s = 0;
 
         if (i < buyList.size()) {
-            const BuyOrder& order = buyList[i];
-            s = order.print().size();
-            std::cout << order.print();
+            const BuyOrder* order = buyList[i];
+            s = order->print().size();
+            std::cout << order->print();
         }
 
         std::cout << std::string(30 - s, ' ');
 
         if (i < sellList.size()) {
-            const SellOrder& order = sellList[i];
-            std::cout << order.print();
+            const SellOrder* order = sellList[i];
+            std::cout << order->print();
         }
 
         std::cout << std::endl;
@@ -66,8 +71,43 @@ void display(double lastTradingPrice, std::priority_queue<BuyOrder> buyOrders, s
 template<typename T>
 void processOrder(Order* order,
         T& matchedQueue,
-        std::vector<std::string>& successfulTrades) {
-    std::cout << order->print() << std::endl;
+        std::vector<std::string>& successfulTrades,
+        double lastTradingPrice) {
+    while (order->getQuantity() > 0 && !matchedQueue.empty()) {
+        Order* top = matchedQueue.top();
+
+        if ((order->getType() == "B" && order->getLimitPrice() < top->getLimitPrice()) ||
+            (order->getType() == "S" && order->getLimitPrice() > top->getLimitPrice()))
+            break;
+        
+        int tradeQuantity = std::min(order->getQuantity(), top->getQuantity());
+        double executionPrice = (order->getIsMarketOrder() && top->getIsMarketOrder()) ? lastTradingPrice :
+            (order->getIsMarketOrder() && !top->getIsMarketOrder()) ? top->getLimitPrice() :
+            (!order->getIsMarketOrder() && top->getIsMarketOrder()) ? order->getLimitPrice() :
+            top->getLimitPrice();
+        
+        std::stringstream purOut;
+        std::stringstream sellOut;
+
+        if (order->getType() == "B")
+            purOut << "order: " << order->getOrderId() << " " << tradeQuantity << " shares purchased at price " << executionPrice;
+        if (top->getType() == "B")    
+            purOut << "order: " << top->getOrderId() << " " << tradeQuantity << " shares purchased at price " << executionPrice;
+        if (order->getType() == "S")
+            sellOut << "order: " << order->getOrderId() << " " << tradeQuantity << " shares sold at price " << executionPrice;
+        if (top->getType() == "S")
+            sellOut << "order: " << top->getOrderId() << " " << tradeQuantity << " shares sold at price " << executionPrice;
+
+        successfulTrades.push_back(purOut.str());
+        successfulTrades.push_back(sellOut.str());
+
+        order->setQuantity(order->getQuantity() - tradeQuantity);
+        top->setQuantity(top->getQuantity() - tradeQuantity);
+
+        if (top->getQuantity() <= 0) {
+            matchedQueue.pop();
+        }
+    }
 }
 
 int main(int argc, char* argv[]) {
@@ -81,8 +121,8 @@ int main(int argc, char* argv[]) {
     double lastTradingPrice = std::stod(inputs[0]);
 
     std::vector<Order*> allOrders;
-    std::priority_queue<BuyOrder> buyOrders;
-    std::priority_queue<SellOrder> sellOrders;
+    std::priority_queue<BuyOrder*, std::vector<BuyOrder*>, compare> buyOrders;
+    std::priority_queue<SellOrder*, std::vector<SellOrder*>, compare> sellOrders;
 
     std::vector<std::string> successfulTrades;
 
@@ -102,17 +142,28 @@ int main(int argc, char* argv[]) {
 
     for (Order* order : allOrders) {
         if (order->getType() == "B") {
-            buyOrders.push(*dynamic_cast<BuyOrder*>(order));
+            processOrder(order, sellOrders, successfulTrades, lastTradingPrice);
         } else {
-            sellOrders.push(*dynamic_cast<SellOrder*>(order));
+            processOrder(order, buyOrders, successfulTrades, lastTradingPrice);
+        }
+
+        if (order->getQuantity() <= 0) continue;
+
+        if (order->getType() == "B") {
+            buyOrders.push(dynamic_cast<BuyOrder*>(order));
+        } else {
+            sellOrders.push(dynamic_cast<SellOrder*>(order));
         }
 
         display(lastTradingPrice, buyOrders, sellOrders);
-        
-        if (order->getType() == "B") {
-            processOrder(order, sellOrders, successfulTrades);
-        } else {
-            processOrder(order, buyOrders, successfulTrades);
-        }
+    }
+
+    for (std::string successfulTrade : successfulTrades) {
+        std::cout << successfulTrade << std::endl;
+    }
+
+    for (Order* order : allOrders) {
+        if (order->getQuantity() <= 0) continue;
+        std::cout << "Unexecuted order: " << order->getOrderId() << std::endl;
     }
 }

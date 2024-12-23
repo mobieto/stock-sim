@@ -1,6 +1,7 @@
 #include "SellOrder.h"
 #include "Order.h"
 #include <string>
+#include <iostream>
 
 SellOrder::SellOrder(std::string orderId, int quantity, bool isMarketOrder, double limitPrice, std::string type) : Order(orderId, quantity, isMarketOrder, limitPrice, type) { };
 
