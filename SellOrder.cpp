@@ -2,7 +2,7 @@
 #include "Order.h"
 #include <string>
 
-SellOrder::SellOrder(std::string orderId, int quantity, bool isMarketOrder, double limitPrice) : Order(orderId, quantity, isMarketOrder, limitPrice) { };
+SellOrder::SellOrder(std::string orderId, int quantity, bool isMarketOrder, double limitPrice, std::string type) : Order(orderId, quantity, isMarketOrder, limitPrice, type) { };
 
 bool SellOrder::operator<(const Order& other) const {
     if (isMarketOrder && !other.getIsMarketOrder()) return false;

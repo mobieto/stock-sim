@@ -7,6 +7,7 @@
 #include <iostream>
 #include <string>
 #include <queue>
+#include <sstream>
 
 std::vector<std::string> getParts(std::string in) {
     std::vector<std::string> out;
@@ -41,10 +42,15 @@ void display(double lastTradingPrice, std::priority_queue<BuyOrder> buyOrders, s
     int maxSize = std::max(buyList.size(), sellList.size());
 
     for (int i = 0; i < maxSize; i++) {
+        int s = 0;
+
         if (i < buyList.size()) {
             const BuyOrder& order = buyList[i];
-            std::cout << order.print() << std::string(30 - order.print().size(), ' ');
+            s = order.print().size();
+            std::cout << order.print();
         }
+
+        std::cout << std::string(30 - s, ' ');
 
         if (i < sellList.size()) {
             const SellOrder& order = sellList[i];
@@ -53,6 +59,15 @@ void display(double lastTradingPrice, std::priority_queue<BuyOrder> buyOrders, s
 
         std::cout << std::endl;
     }
+
+    std::cout << std::endl;
+}
+
+template<typename T>
+void processOrder(Order* order,
+        T& matchedQueue,
+        std::vector<std::string>& successfulTrades) {
+    std::cout << order->print() << std::endl;
 }
 
 int main(int argc, char* argv[]) {
@@ -65,10 +80,11 @@ int main(int argc, char* argv[]) {
 
     double lastTradingPrice = std::stod(inputs[0]);
 
+    std::vector<Order*> allOrders;
     std::priority_queue<BuyOrder> buyOrders;
     std::priority_queue<SellOrder> sellOrders;
+
     std::vector<std::string> successfulTrades;
-    std::vector<Order> unexecutedOrders;
 
     for (std::string input : inputs) {
         std::vector<std::string> split = getParts(input);
@@ -78,13 +94,25 @@ int main(int argc, char* argv[]) {
         bool isMarketOrder = split.size() < 4;
 
         if (split[1] == "B") {
-            BuyOrder buyOrder(split[0], std::stoi(split[2]), isMarketOrder, isMarketOrder ? -1 : std::stod(split[3]));
-            buyOrders.push(buyOrder);
+            allOrders.push_back(new BuyOrder(split[0], std::stoi(split[2]), isMarketOrder, isMarketOrder ? -1 : std::stod(split[3]), "B"));
         } else {
-            SellOrder sellOrder(split[0], std::stoi(split[2]), isMarketOrder, isMarketOrder ? -1 : std::stod(split[3]));
-            sellOrders.push(sellOrder);
+            allOrders.push_back(new SellOrder(split[0], std::stoi(split[2]), isMarketOrder, isMarketOrder ? -1 : std::stod(split[3]), "S"));
         }
     }
-    
-    display(lastTradingPrice, buyOrders, sellOrders);
+
+    for (Order* order : allOrders) {
+        if (order->getType() == "B") {
+            buyOrders.push(*dynamic_cast<BuyOrder*>(order));
+        } else {
+            sellOrders.push(*dynamic_cast<SellOrder*>(order));
+        }
+
+        display(lastTradingPrice, buyOrders, sellOrders);
+        
+        if (order->getType() == "B") {
+            processOrder(order, sellOrders, successfulTrades);
+        } else {
+            processOrder(order, buyOrders, successfulTrades);
+        }
+    }
 }

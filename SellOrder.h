@@ -8,7 +8,7 @@ class SellOrder : public Order {
     using Order::Order;
     
     public:
-        SellOrder(std::string orderId, int quantity, bool isMarketOrder, double limitPrice);
+        SellOrder(std::string orderId, int quantity, bool isMarketOrder, double limitPrice, std::string type);
 
         bool operator<(const Order& other) const;
 };

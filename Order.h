@@ -5,7 +5,7 @@
 
 class Order {
     public:
-        Order(std::string orderId, int quantity, bool isMarketOrder, double limitPrice);
+        Order(std::string orderId, int quantity, bool isMarketOrder, double limitPrice, std::string type);
 
         std::string print() const;
 
@@ -19,6 +19,8 @@ class Order {
 
         bool getIsMarketOrder() const;
 
+        std::string getType() const;
+
         int getArrival() const;
     protected:
         std::string orderId;
@@ -28,6 +30,8 @@ class Order {
         double limitPrice;
 
         bool isMarketOrder;
+
+        std::string type;
 
         int arrival;
 };
