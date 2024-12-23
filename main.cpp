@@ -76,8 +76,9 @@ void processOrder(Order* order,
     while (order->getQuantity() > 0 && !matchedQueue.empty()) {
         Order* top = matchedQueue.top();
 
-        if ((order->getType() == "B" && order->getLimitPrice() < top->getLimitPrice()) ||
-            (order->getType() == "S" && order->getLimitPrice() > top->getLimitPrice()))
+        if (((order->getType() == "B" && order->getLimitPrice() < top->getLimitPrice()) ||
+            (order->getType() == "S" && order->getLimitPrice() > top->getLimitPrice())) &&
+            (!order->getIsMarketOrder() && !top->getIsMarketOrder()))
             break;
         
         int tradeQuantity = std::min(order->getQuantity(), top->getQuantity());
@@ -88,15 +89,17 @@ void processOrder(Order* order,
         
         std::stringstream purOut;
         std::stringstream sellOut;
+        purOut << std::fixed << std::setprecision(2);
+        sellOut << std::fixed << std::setprecision(2);
 
         if (order->getType() == "B")
-            purOut << "order: " << order->getOrderId() << " " << tradeQuantity << " shares purchased at price " << executionPrice;
+            purOut << "order " << order->getOrderId() << " " << tradeQuantity << " shares purchased at price " << executionPrice;
         if (top->getType() == "B")    
-            purOut << "order: " << top->getOrderId() << " " << tradeQuantity << " shares purchased at price " << executionPrice;
+            purOut << "order " << top->getOrderId() << " " << tradeQuantity << " shares purchased at price " << executionPrice;
         if (order->getType() == "S")
-            sellOut << "order: " << order->getOrderId() << " " << tradeQuantity << " shares sold at price " << executionPrice;
+            sellOut << "order " << order->getOrderId() << " " << tradeQuantity << " shares sold at price " << executionPrice;
         if (top->getType() == "S")
-            sellOut << "order: " << top->getOrderId() << " " << tradeQuantity << " shares sold at price " << executionPrice;
+            sellOut << "order " << top->getOrderId() << " " << tradeQuantity << " shares sold at price " << executionPrice;
 
         successfulTrades.push_back(purOut.str());
         successfulTrades.push_back(sellOut.str());
@@ -111,8 +114,6 @@ void processOrder(Order* order,
 }
 
 int main(int argc, char* argv[]) {
-    std::cout << std::fixed << std::setprecision(2);
-
     std::string fileName(argv[1]);
     FileReader fileReader(fileName);
 
@@ -141,6 +142,8 @@ int main(int argc, char* argv[]) {
     }
 
     for (Order* order : allOrders) {
+        std::cout << "processing order: " << order->getOrderId() << std::endl;
+
         if (order->getType() == "B") {
             processOrder(order, sellOrders, successfulTrades, lastTradingPrice);
         } else {
@@ -155,8 +158,10 @@ int main(int argc, char* argv[]) {
             sellOrders.push(dynamic_cast<SellOrder*>(order));
         }
 
-        display(lastTradingPrice, buyOrders, sellOrders);
+        //display(lastTradingPrice, buyOrders, sellOrders);
     }
+
+    std::cout << std::endl << std::endl;
 
     for (std::string successfulTrade : successfulTrades) {
         std::cout << successfulTrade << std::endl;
@@ -164,6 +169,9 @@ int main(int argc, char* argv[]) {
 
     for (Order* order : allOrders) {
         if (order->getQuantity() <= 0) continue;
-        std::cout << "Unexecuted order: " << order->getOrderId() << std::endl;
+        std::stringstream out;
+        out << std::fixed << std::setprecision(2);
+        out << "order " << order->getOrderId() << " " << order->getQuantity() << " shares unexecuted";
+        std::cout << out.str() << std::endl;
     }
 }
