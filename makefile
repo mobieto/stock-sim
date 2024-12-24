@@ -26,7 +26,7 @@ FileReader.o: FileReader.cpp FileReader.h
 	$(CMPLR) -c FileReader.cpp -o FileReader.o
 
 FileWriter.o: FileWriter.cpp FileWriter.h
-	$(CMPLR) -c FileWriter.cpp FileWriter.o
+	$(CMPLR) -c FileWriter.cpp -o FileWriter.o
 
 Order.o: Order.cpp Order.h
 	$(CMPLR) -c Order.cpp -o Order.o
