@@ -163,17 +163,19 @@ int main(int argc, char* argv[]) {
     }
 
     for (std::string successfulTrade : successfulTrades)
-        fileWriter.writeLine(successfulTrade, !allOrders.empty());
+        fileWriter.writeLine(successfulTrade, true);
 
-    int _i = 0;
     for (Order* order : allOrders) {
         if (order->getQuantity() <= 0) continue;
+
         std::stringstream out;
         out << std::fixed << std::setprecision(2);
         out << "order " << order->getOrderId() << " " << order->getQuantity() << " shares unexecuted";
-        fileWriter.writeLine(out.str(), _i++ == allOrders.size() - 1);
+        fileWriter.writeLine(out.str(), true);
     }
 
     for (Order* order : allOrders)
         delete order;
+
+    allOrders.clear();
 }
