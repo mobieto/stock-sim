@@ -9,6 +9,7 @@ FileWriter::~FileWriter() {
     file.close();
 }
 
-void FileWriter::writeLine(std::string line) {
-    file << line << std::endl;
+void FileWriter::writeLine(std::string line, bool endline) {
+    file << line;
+    if (endline) file << std::endl;
 }

@@ -118,18 +118,17 @@ void processOrder(Order* order,
 
 int main(int argc, char* argv[]) {
     std::string fileName(argv[1]);
+    std::string suffix = fileName.substr(5);
     FileReader fileReader(fileName);
-    FileWriter fileWriter("output.txt");
+    FileWriter fileWriter("output" + suffix);
 
     std::vector<std::string> inputs = fileReader.getLines();
-
-    double lastTradingPrice = std::stod(inputs[0]);
-
+    std::vector<std::string> successfulTrades;
     std::vector<Order*> allOrders;
     std::priority_queue<BuyOrder*, std::vector<BuyOrder*>, compare> buyOrders;
     std::priority_queue<SellOrder*, std::vector<SellOrder*>, compare> sellOrders;
 
-    std::vector<std::string> successfulTrades;
+    double lastTradingPrice = std::stod(inputs[0]);
 
     for (std::string input : inputs) {
         std::vector<std::string> split = getParts(input);
@@ -163,18 +162,18 @@ int main(int argc, char* argv[]) {
         display(lastTradingPrice, buyOrders, sellOrders);
     }
 
-    fileWriter.writeLine("--------------------------------");
-
     for (std::string successfulTrade : successfulTrades)
-        fileWriter.writeLine(successfulTrade);
+        fileWriter.writeLine(successfulTrade, !allOrders.empty());
 
+    int _i = 0;
     for (Order* order : allOrders) {
         if (order->getQuantity() <= 0) continue;
         std::stringstream out;
         out << std::fixed << std::setprecision(2);
         out << "order " << order->getOrderId() << " " << order->getQuantity() << " shares unexecuted";
-        fileWriter.writeLine(out.str());
+        fileWriter.writeLine(out.str(), _i++ == allOrders.size() - 1);
     }
 
-    fileWriter.writeLine("----------------------------------");
+    for (Order* order : allOrders)
+        delete order;
 }

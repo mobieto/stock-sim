@@ -11,7 +11,7 @@ class FileWriter {
         FileWriter(std::string _fileName);
         ~FileWriter();
 
-        void writeLine(std::string line);
+        void writeLine(std::string line, bool endl);
     private:
         std::ofstream file;
 };
