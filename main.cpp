@@ -1,6 +1,7 @@
 #include "FileReader.h"
 #include "BuyOrder.h"
 #include "SellOrder.h"
+#include "FileWriter.h"
 #include "Order.h"
 #include <vector>
 #include <iomanip>
@@ -118,6 +119,7 @@ void processOrder(Order* order,
 int main(int argc, char* argv[]) {
     std::string fileName(argv[1]);
     FileReader fileReader(fileName);
+    FileWriter fileWriter("output.txt");
 
     std::vector<std::string> inputs = fileReader.getLines();
 
@@ -161,17 +163,18 @@ int main(int argc, char* argv[]) {
         display(lastTradingPrice, buyOrders, sellOrders);
     }
 
-    std::cout << std::endl << std::endl;
+    fileWriter.writeLine("--------------------------------");
 
-    for (std::string successfulTrade : successfulTrades) {
-        std::cout << successfulTrade << std::endl;
-    }
+    for (std::string successfulTrade : successfulTrades)
+        fileWriter.writeLine(successfulTrade);
 
     for (Order* order : allOrders) {
         if (order->getQuantity() <= 0) continue;
         std::stringstream out;
         out << std::fixed << std::setprecision(2);
         out << "order " << order->getOrderId() << " " << order->getQuantity() << " shares unexecuted";
-        std::cout << out.str() << std::endl;
+        fileWriter.writeLine(out.str());
     }
+
+    fileWriter.writeLine("----------------------------------");
 }

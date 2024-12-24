@@ -19,11 +19,14 @@ CMPLR = g++
 All: all
 all: main
 
-main: main.cpp FileReader.o Order.o BuyOrder.o SellOrder.o
-	$(CMPLR) main.cpp FileReader.o Order.o BuyOrder.o SellOrder.o -o main
+main: main.cpp FileReader.o FileWriter.o Order.o BuyOrder.o SellOrder.o
+	$(CMPLR) main.cpp FileReader.o FileWriter.o Order.o BuyOrder.o SellOrder.o -o main
 
 FileReader.o: FileReader.cpp FileReader.h
 	$(CMPLR) -c FileReader.cpp -o FileReader.o
+
+FileWriter.o: FileWriter.cpp FileWriter.h
+	$(CMPLR) -c FileWriter.cpp FileWriter.h
 
 Order.o: Order.cpp Order.h
 	$(CMPLR) -c Order.cpp -o Order.o

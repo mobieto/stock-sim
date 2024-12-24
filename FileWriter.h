@@ -1,0 +1,19 @@
+#ifndef FILEWRITER_H_
+#define FILEWRITER_H_
+
+#include <iosfwd>
+#include <fstream>
+#include <string>
+#include <vector>
+
+class FileWriter {
+    public:
+        FileWriter(std::string _fileName);
+        ~FileWriter();
+
+        void writeLine(std::string line);
+    private:
+        std::ofstream file;
+};
+
+#endif
