@@ -120,6 +120,7 @@ void processOrder(Order* order,
 }
 
 int main(int argc, char* argv[]) {
+    std::cout << std::fixed << std::setprecision(2);
     std::string fileName(argv[1]);
     std::string suffix = fileName.substr(5);
     FileReader fileReader(fileName);
@@ -165,6 +166,8 @@ int main(int argc, char* argv[]) {
         display(lastTradingPrice, buyOrders, sellOrders);
     }
 
+    int _j = 0;
+
     for (Order* order : allOrders) { // Log unexecuted orders
         if (order->getQuantity() <= 0) continue;
 
@@ -172,7 +175,10 @@ int main(int argc, char* argv[]) {
         out << std::fixed << std::setprecision(2);
         out << "order " << order->getOrderId() << " " << order->getQuantity() << " shares unexecuted";
         tradeResults.push_back(out.str());
+        _j++;
     }
+
+    std::cout << "ALL ORDERS MATCHED, " << _j << " ORDERS NOT FULLY EXECUTED" << std::endl;
 
     int _i = 0;
 
