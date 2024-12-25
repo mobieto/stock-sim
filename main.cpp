@@ -74,19 +74,19 @@ void processOrder(Order* order,
         T& matchedQueue,
         std::vector<std::string>& successfulTrades,
         double& lastTradingPrice) {
-    while (order->getQuantity() > 0 && !matchedQueue.empty()) {
+    while (order->getQuantity() > 0 && !matchedQueue.empty()) { // Loop until order fully executed or no matchable orders
         Order* top = matchedQueue.top();
 
         if (((order->getType() == "B" && order->getLimitPrice() < top->getLimitPrice()) ||
             (order->getType() == "S" && order->getLimitPrice() > top->getLimitPrice())) &&
             (!order->getIsMarketOrder() && !top->getIsMarketOrder()))
-            break;
+            break; // Stop if buy order and sell order is selling for too much, or sell order and buy order is buying for too little
         
         int tradeQuantity = std::min(order->getQuantity(), top->getQuantity());
         double executionPrice = (order->getIsMarketOrder() && top->getIsMarketOrder()) ? lastTradingPrice :
             (order->getIsMarketOrder() && !top->getIsMarketOrder()) ? top->getLimitPrice() :
             (!order->getIsMarketOrder() && top->getIsMarketOrder()) ? order->getLimitPrice() :
-            top->getLimitPrice();
+            top->getLimitPrice(); // Last trading price if both market orders, limit price if other is market order, or earlier limit price if neither market order
         
         std::stringstream purOut;
         std::stringstream sellOut;
@@ -108,9 +108,9 @@ void processOrder(Order* order,
         order->setQuantity(order->getQuantity() - tradeQuantity);
         top->setQuantity(top->getQuantity() - tradeQuantity);
 
-        lastTradingPrice = executionPrice;
+        lastTradingPrice = executionPrice; // Set last trading price to this traded price
 
-        if (top->getQuantity() <= 0) {
+        if (top->getQuantity() <= 0) { // Remove the other order from queue if it's fully executed
             matchedQueue.pop();
         }
     }
@@ -123,14 +123,14 @@ int main(int argc, char* argv[]) {
     FileWriter fileWriter("output" + suffix);
 
     std::vector<std::string> inputs = fileReader.getLines();
-    std::vector<std::string> successfulTrades;
+    std::vector<std::string> tradeResults;
     std::vector<Order*> allOrders;
     std::priority_queue<BuyOrder*, std::vector<BuyOrder*>, compare> buyOrders;
     std::priority_queue<SellOrder*, std::vector<SellOrder*>, compare> sellOrders;
 
     double lastTradingPrice = std::stod(inputs[0]);
 
-    for (std::string input : inputs) {
+    for (std::string input : inputs) { // Go through input lines and create new Order object for each
         std::vector<std::string> split = getParts(input);
 
         if (split.size() < 2) continue;
@@ -144,16 +144,16 @@ int main(int argc, char* argv[]) {
         }
     }
 
-    for (Order* order : allOrders) {
+    for (Order* order : allOrders) { // Loop through each order, process order first, then add to queue
         if (order->getType() == "B") {
-            processOrder(order, sellOrders, successfulTrades, lastTradingPrice);
+            processOrder(order, sellOrders, tradeResults, lastTradingPrice);
         } else {
-            processOrder(order, buyOrders, successfulTrades, lastTradingPrice);
+            processOrder(order, buyOrders, tradeResults, lastTradingPrice);
         }
 
         if (order->getQuantity() <= 0) continue;
 
-        if (order->getType() == "B") {
+        if (order->getType() == "B") { // Cast Order base class to specific type of order
             buyOrders.push(dynamic_cast<BuyOrder*>(order));
         } else {
             sellOrders.push(dynamic_cast<SellOrder*>(order));
@@ -162,19 +162,23 @@ int main(int argc, char* argv[]) {
         display(lastTradingPrice, buyOrders, sellOrders);
     }
 
-    for (std::string successfulTrade : successfulTrades)
-        fileWriter.writeLine(successfulTrade, true);
-
-    for (Order* order : allOrders) {
+    for (Order* order : allOrders) { // Log unexecuted orders
         if (order->getQuantity() <= 0) continue;
 
         std::stringstream out;
         out << std::fixed << std::setprecision(2);
         out << "order " << order->getOrderId() << " " << order->getQuantity() << " shares unexecuted";
-        fileWriter.writeLine(out.str(), true);
+        tradeResults.push_back(out.str());
     }
 
-    for (Order* order : allOrders)
+    int _i = 0;
+
+    for (std::string tradeResult : tradeResults) { // Write successful & unexecuted orders to file
+        fileWriter.writeLine(tradeResult, _i < tradeResults.size() - 1); // Dont put endl at end of file
+        _i++;
+    }
+
+    for (Order* order : allOrders) // Clear memory, maybe better to use smart pointers in case allOrders dies
         delete order;
 
     allOrders.clear();
