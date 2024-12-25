@@ -28,6 +28,7 @@ std::vector<std::string> getParts(std::string in) {
 }
 
 void display(double lastTradingPrice, std::priority_queue<BuyOrder*, std::vector<BuyOrder*>, compare> buyOrders, std::priority_queue<SellOrder*, std::vector<SellOrder*>, compare> sellOrders) {
+    std::cout << std::endl << "------------------- PENDING ORDERS -------------------" << std::endl;
     std::cout << "Last trading price: " << lastTradingPrice << std::endl;
     std::cout << "Buy                           Sell" << std::endl;
     std::cout << "------------------------------------------------------" << std::endl;
@@ -101,6 +102,8 @@ void processOrder(Order* order,
             sellOut << "order " << order->getOrderId() << " " << tradeQuantity << " shares sold at price " << executionPrice;
         if (top->getType() == "S")
             sellOut << "order " << top->getOrderId() << " " << tradeQuantity << " shares sold at price " << executionPrice;
+
+        std::cout << "Matched orders: " << order->getOrderId() << " & " << top->getOrderId() << " | Executed at price: " << executionPrice << " | Shares traded: " << tradeQuantity << std::endl;
 
         successfulTrades.push_back(purOut.str());
         successfulTrades.push_back(sellOut.str());
