@@ -52,16 +52,14 @@ void display(double lastTradingPrice, std::priority_queue<BuyOrder*, std::vector
         int s = 0;
 
         if (i < buyList.size()) {
-            const BuyOrder* order = buyList[i];
-            s = order->print().size();
-            std::cout << order->print();
+            s = buyList[i]->print().size();
+            std::cout << buyList[i]->print();
         }
 
         std::cout << std::string(30 - s, ' ');
 
         if (i < sellList.size()) {
-            const SellOrder* order = sellList[i];
-            std::cout << order->print();
+            std::cout << sellList[i]->print();
         }
 
         std::cout << std::endl;
@@ -71,22 +69,22 @@ void display(double lastTradingPrice, std::priority_queue<BuyOrder*, std::vector
 }
 
 template<typename T>
-void processOrder(Order* order,
+void processOrder(Order& order,
         T& matchedQueue,
         std::vector<std::string>& successfulTrades,
         double& lastTradingPrice) {
-    while (order->getQuantity() > 0 && !matchedQueue.empty()) { // Loop until order fully executed or no matchable orders
+    while (order.getQuantity() > 0 && !matchedQueue.empty()) { // Loop until order fully executed or no matchable orders
         Order* top = matchedQueue.top();
 
-        if (((order->getType() == "B" && order->getLimitPrice() < top->getLimitPrice()) ||
-            (order->getType() == "S" && order->getLimitPrice() > top->getLimitPrice())) &&
-            (!order->getIsMarketOrder() && !top->getIsMarketOrder()))
+        if (((order.getType() == "B" && order.getLimitPrice() < top->getLimitPrice()) ||
+            (order.getType() == "S" && order.getLimitPrice() > top->getLimitPrice())) &&
+            (!order.getIsMarketOrder() && !top->getIsMarketOrder()))
             break; // Stop if buy order and sell order is selling for too much, or sell order and buy order is buying for too little
         
-        int tradeQuantity = std::min(order->getQuantity(), top->getQuantity());
-        double executionPrice = (order->getIsMarketOrder() && top->getIsMarketOrder()) ? lastTradingPrice :
-            (order->getIsMarketOrder() && !top->getIsMarketOrder()) ? top->getLimitPrice() :
-            (!order->getIsMarketOrder() && top->getIsMarketOrder()) ? order->getLimitPrice() :
+        int tradeQuantity = std::min(order.getQuantity(), top->getQuantity());
+        double executionPrice = (order.getIsMarketOrder() && top->getIsMarketOrder()) ? lastTradingPrice :
+            (order.getIsMarketOrder() && !top->getIsMarketOrder()) ? top->getLimitPrice() :
+            (!order.getIsMarketOrder() && top->getIsMarketOrder()) ? order.getLimitPrice() :
             top->getLimitPrice(); // Last trading price if both market orders, limit price if other is market order, or earlier limit price if neither market order
         
         std::stringstream purOut;
@@ -94,21 +92,21 @@ void processOrder(Order* order,
         purOut << std::fixed << std::setprecision(2);
         sellOut << std::fixed << std::setprecision(2);
 
-        if (order->getType() == "B")
-            purOut << "order " << order->getOrderId() << " " << tradeQuantity << " shares purchased at price " << executionPrice;
+        if (order.getType() == "B")
+            purOut << "order " << order.getOrderId() << " " << tradeQuantity << " shares purchased at price " << executionPrice;
         if (top->getType() == "B")    
             purOut << "order " << top->getOrderId() << " " << tradeQuantity << " shares purchased at price " << executionPrice;
-        if (order->getType() == "S")
-            sellOut << "order " << order->getOrderId() << " " << tradeQuantity << " shares sold at price " << executionPrice;
+        if (order.getType() == "S")
+            sellOut << "order " << order.getOrderId() << " " << tradeQuantity << " shares sold at price " << executionPrice;
         if (top->getType() == "S")
             sellOut << "order " << top->getOrderId() << " " << tradeQuantity << " shares sold at price " << executionPrice;
 
-        std::cout << "Matched orders: " << order->getOrderId() << " & " << top->getOrderId() << " | Executed at price: " << executionPrice << " | Shares traded: " << tradeQuantity << std::endl;
+        std::cout << "Matched orders: " << order.getOrderId() << " & " << top->getOrderId() << " | Executed at price: " << executionPrice << " | Shares traded: " << tradeQuantity << std::endl;
 
         successfulTrades.push_back(purOut.str());
         successfulTrades.push_back(sellOut.str());
 
-        order->setQuantity(order->getQuantity() - tradeQuantity);
+        order.setQuantity(order.getQuantity() - tradeQuantity);
         top->setQuantity(top->getQuantity() - tradeQuantity);
 
         lastTradingPrice = executionPrice; // Set last trading price to this traded price
@@ -128,7 +126,7 @@ int main(int argc, char* argv[]) {
 
     std::vector<std::string> inputs = fileReader.getLines();
     std::vector<std::string> tradeResults;
-    std::vector<Order*> allOrders;
+    std::vector<std::unique_ptr<Order>> allOrders;
     std::priority_queue<BuyOrder*, std::vector<BuyOrder*>, compare> buyOrders;
     std::priority_queue<SellOrder*, std::vector<SellOrder*>, compare> sellOrders;
 
@@ -142,25 +140,25 @@ int main(int argc, char* argv[]) {
         bool isMarketOrder = split.size() < 4;
 
         if (split[1] == "B") {
-            allOrders.push_back(new BuyOrder(split[0], std::stoi(split[2]), isMarketOrder, isMarketOrder ? -1 : std::stod(split[3]), "B"));
+            allOrders.push_back(std::unique_ptr<BuyOrder>(new BuyOrder(split[0], std::stoi(split[2]), isMarketOrder, isMarketOrder ? -1 : std::stod(split[3]), "B")));
         } else {
-            allOrders.push_back(new SellOrder(split[0], std::stoi(split[2]), isMarketOrder, isMarketOrder ? -1 : std::stod(split[3]), "S"));
+            allOrders.push_back(std::unique_ptr<SellOrder>(new SellOrder(split[0], std::stoi(split[2]), isMarketOrder, isMarketOrder ? -1 : std::stod(split[3]), "S")));
         }
     }
 
-    for (Order* order : allOrders) { // Loop through each order, process order first, then add to queue
+    for (auto&& order : allOrders) { // Loop through each order, process order first, then add to queue
         if (order->getType() == "B") {
-            processOrder(order, sellOrders, tradeResults, lastTradingPrice);
+            processOrder(*order, sellOrders, tradeResults, lastTradingPrice);
         } else {
-            processOrder(order, buyOrders, tradeResults, lastTradingPrice);
+            processOrder(*order, buyOrders, tradeResults, lastTradingPrice);
         }
 
         if (order->getQuantity() <= 0) continue;
 
         if (order->getType() == "B") { // Cast Order base class to specific type of order
-            buyOrders.push(dynamic_cast<BuyOrder*>(order));
+            buyOrders.push(&dynamic_cast<BuyOrder&>(*order));
         } else {
-            sellOrders.push(dynamic_cast<SellOrder*>(order));
+            sellOrders.push(&dynamic_cast<SellOrder&>(*order));
         }
 
         display(lastTradingPrice, buyOrders, sellOrders);
@@ -168,7 +166,7 @@ int main(int argc, char* argv[]) {
 
     int _j = 0;
 
-    for (Order* order : allOrders) { // Log unexecuted orders
+    for (auto&& order : allOrders) { // Log unexecuted orders
         if (order->getQuantity() <= 0) continue;
 
         std::stringstream out;
@@ -186,9 +184,4 @@ int main(int argc, char* argv[]) {
         fileWriter.writeLine(tradeResult, _i < tradeResults.size() - 1); // Dont put endl at end of file
         _i++;
     }
-
-    for (Order* order : allOrders) // Clear memory, maybe better to use smart pointers in case allOrders dies
-        delete order;
-
-    allOrders.clear();
 }
