@@ -9,10 +9,11 @@
 class FileReader {
     public:
         FileReader(std::string _fileName);
+        ~FileReader();
 
-        std::vector<std::string> getLines() const;
+        std::vector<std::string> getLines();
     private:
-        std::string fileName;
+        std::ifstream file;
 };
 
 #endif

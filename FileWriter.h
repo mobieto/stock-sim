@@ -1,7 +1,6 @@
 #ifndef FILEWRITER_H_
 #define FILEWRITER_H_
 
-#include <iosfwd>
 #include <fstream>
 #include <string>
 #include <vector>

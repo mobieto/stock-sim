@@ -2,15 +2,20 @@
 #define BUYORDER_H_
 
 #include "Order.h"
-#include <string>
+
+class SellOrder;
 
 class BuyOrder : public Order {
     using Order::Order;
     
     public:
-        BuyOrder(std::string orderId, int quantity, bool isMarketOrder, double limitPrice, std::string type);
+        BuyOrder(std::string orderId, int quantity, bool isMarketOrder, double limitPrice);
 
         bool operator<(const Order& other) const;
+
+        void process(std::priority_queue<BuyOrder*, std::vector<BuyOrder*>, Comparison>& buyQueue,
+            std::priority_queue<SellOrder*, std::vector<SellOrder*>, Comparison>& sellQueue, 
+            std::vector<std::string>& tradeResults, double& lastTradingPrice);
 };
 
 #endif

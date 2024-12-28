@@ -1,17 +1,15 @@
 #include "Order.h"
-#include <string>
 #include <sstream>
 #include <iostream>
 #include <iomanip>
 
 int arrivalIndex = 0;
 
-Order::Order(std::string _orderId, int _quantity, bool _isMarketOrder, double _limitPrice, std::string _type) {
+Order::Order(std::string _orderId, int _quantity, bool _isMarketOrder, double _limitPrice) {
     orderId = _orderId;
     quantity = _quantity;
     isMarketOrder = _isMarketOrder;
     limitPrice = _limitPrice;
-    type = _type;
     arrival = arrivalIndex++;
 }
 
@@ -40,10 +38,6 @@ double Order::getLimitPrice() const {
 
 bool Order::getIsMarketOrder() const {
     return isMarketOrder;
-}
-
-std::string Order::getType() const {
-    return type;
 }
 
 int Order::getArrival() const {

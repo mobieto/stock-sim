@@ -1,5 +1,4 @@
 #include "FileWriter.h"
-#include <string>
 
 FileWriter::FileWriter(std::string fileName) {
     file.open(fileName);
