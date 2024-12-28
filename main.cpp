@@ -121,9 +121,8 @@ int main(int argc, char* argv[]) {
         numUnexecuted++;
     }
 
-    for (std::string tradeResult : tradeResults) { // Write successful & unexecuted orders to file
+    for (std::string tradeResult : tradeResults) // Write successful & unexecuted orders to file
         fileWriter.writeLine(tradeResult, numTrades++ < tradeResults.size() - 1); // Dont put endl at end of file
-    }
 
     std::cout << "ALL ORDERS MATCHED, " << numUnexecuted << " ORDERS NOT FULLY EXECUTED" << std::endl;
 }
